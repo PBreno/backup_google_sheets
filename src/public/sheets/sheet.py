@@ -1,44 +1,35 @@
-import http
-import io
 import os
 
 from google.auth.transport.requests import Request
-
-from fastapi import APIRouter, HTTPException, Response
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseDownload
 
 from .driver import download_file
-from .message import http_message
-router = APIRouter(
-    prefix="/sheets",
-    tags=["sheets"]
-)
 
 
-@router.get('/')
-async def get_sheet()-> list() :
+#Getting the path to the credentials file
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+JSON_PATH = os.path.join(BASE_DIR, 'credentials.json')
 
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    json_path = os.path.join(base_dir, 'credentials.json')
+# If modifying these scopes, delete the file token.json.
+SCOPES = ["https://www.googleapis.com/auth/drive.metadata.readonly"]
 
-    SCOPES = ["https://www.googleapis.com/auth/drive.metadata.readonly"]
+def get_sheet()-> list[str] | HttpError:
 
     creds = None
 
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 
-    #print(json_path)
+    # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                json_path, SCOPES
+                JSON_PATH, SCOPES
             )
             creds = flow.run_local_server(port=0)
 
@@ -55,36 +46,18 @@ async def get_sheet()-> list() :
         )
 
         items = results.get('files', [])
+
+        if not items:
+            raise Exception('No files found.')
+
+        #Getting only spreadsheet from drive
         sheets = []
         for item in items:
             if item['mimeType'] == 'application/vnd.google-apps.spreadsheet':
                 sheets.append(item)
 
-        if not items:
-            return {
-                "message": "No files found."
-            }
-        #print('Files:')
-
-        # mime_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        # request = service.files().export_media(fileId=id_sheets[0], mimeType=mime_type)
-        # file = io.BytesIO()
-        # downloader = MediaIoBaseDownload(file, request)
-        # done = False
-        # while done is False:
-        #     status, done = downloader.next_chunk()
-        #     print(f"Download {int(status.progress() * 100)}.")
-
-        return {
-             "message": "Sucess",
-            "codestatus": http.HTTPStatus.OK,
-             "data": download_file(sheets)
-         }
-
+        return download_file(sheets)
 
     except HttpError as error:
-        return {
-            "message": "An error occurred: {}".format(error),
-            "statuscode": http.HTTPStatus.BAD_REQUEST
-        }
+        return error
 

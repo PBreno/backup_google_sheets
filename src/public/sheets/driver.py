@@ -1,6 +1,5 @@
 import io
-from typing import Any
-
+from datetime import datetime
 import google
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -8,26 +7,24 @@ from googleapiclient.http import MediaIoBaseDownload
 
 
 def download_file(items):
-    """Downloads a file
-  Args:
-      real_file_id: ID of the file to download
-  Returns : IO object with location.
 
-  Load pre-authorized user credentials from the environment.
-  TODO(developer) - See https://developers.google.com/identity
-  for guides on implementing OAuth2 for the application.
-  """
     creds, _ = google.auth.default()
 
     try:
-        # create drive api client
+        #path to the folder
+        BACKUP_FOLDER_PATH = 'M:\\Usuários\\Breno Francisco Rafael Pombo\\backup'
+
+        #create drive api client
         service = build("drive", "v3", credentials=creds)
 
+        date_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        #downloading the files
         for item in items:
             print(f"Downloading file with id {item['id']}")
             request = service.files().export_media(fileId=item['id'],
                                                    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            file = io.FileIO(f'{item['name'] }.xlsx', 'wb')
+            file = io.FileIO(f'{BACKUP_FOLDER_PATH}\\{item['name']}-{date_time}.xlsx', 'wb', closefd=True)
             downloader = MediaIoBaseDownload(file, request)
             done = False
             while done is False:
@@ -38,3 +35,4 @@ def download_file(items):
 
     except HttpError as error:
         return error
+
