@@ -1,4 +1,5 @@
 import io
+import os
 from datetime import datetime
 import google
 from googleapiclient.discovery import build
@@ -6,13 +7,14 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 
 
+#path to the folder
+BACKUP_FOLDER_PATH = 'M:\\Usuários\\Breno Francisco Rafael Pombo\\backup'
+
 def download_file(items):
 
     creds, _ = google.auth.default()
 
     try:
-        #path to the folder
-        BACKUP_FOLDER_PATH = 'M:\\Usuários\\Breno Francisco Rafael Pombo\\backup'
 
         #create drive api client
         service = build("drive", "v3", credentials=creds)
@@ -36,3 +38,18 @@ def download_file(items):
     except HttpError as error:
         return error
 
+
+
+def remove_duplicate_files(items):
+
+    backup_folder_items = os.listdir(BACKUP_FOLDER_PATH)
+    name = None
+    file_filtered = None
+    for item in items:
+        name = item['name'].split('-')
+        for file in backup_folder_items:
+            file_filtered = file.split('-')
+            if name[0] is not file_filtered[0]:
+                print('Primeiro ->', name[0],\
+                      '\nSegundo ->',file_filtered[0])
+                print(f"Removing file with id {item['id']} from drive")
