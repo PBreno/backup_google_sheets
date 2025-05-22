@@ -8,7 +8,7 @@ from googleapiclient.http import MediaIoBaseDownload
 
 
 #path to the folder
-BACKUP_FOLDER_PATH = 'M:\\Usuários\\Breno Francisco Rafael Pombo\\backup'
+BACKUP_FOLDER_PATH = 'M:\\Usuários\\Estevan Silva\\backup planilhas'
 
 def download_files(items):
 
@@ -18,6 +18,11 @@ def download_files(items):
 
         #create drive api client
         service = build("drive", "v3", credentials=creds)
+
+        # Create a folder if not exists in the specified path.
+        if not os.path.exists(BACKUP_FOLDER_PATH):
+            print(f"Creating folder {BACKUP_FOLDER_PATH}")
+            os.mkdir(BACKUP_FOLDER_PATH)
 
         date_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -41,6 +46,9 @@ def download_files(items):
 
 
 def remove_duplicate_files(items):
+
+    if not os.path.exists(BACKUP_FOLDER_PATH):
+        return
 
     backup_folder_items = os.listdir(BACKUP_FOLDER_PATH)
 
