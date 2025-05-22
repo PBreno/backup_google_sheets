@@ -6,7 +6,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from .driver import download_file, remove_duplicate_files
+from .driver import download_files, remove_duplicate_files
 
 #Getting the path to the credentials file
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,7 +55,9 @@ def get_sheet()-> list[str] | HttpError:
             if item['mimeType'] == 'application/vnd.google-apps.spreadsheet':
                 sheets.append(item)
 
-        return remove_duplicate_files(sheets)
+        remove_duplicate_files(sheets)
+
+        return download_files(sheets)
 
     except HttpError as error:
         return error

@@ -10,7 +10,7 @@ from googleapiclient.http import MediaIoBaseDownload
 #path to the folder
 BACKUP_FOLDER_PATH = 'M:\\Usuários\\Breno Francisco Rafael Pombo\\backup'
 
-def download_file(items):
+def download_files(items):
 
     creds, _ = google.auth.default()
 
@@ -43,13 +43,11 @@ def download_file(items):
 def remove_duplicate_files(items):
 
     backup_folder_items = os.listdir(BACKUP_FOLDER_PATH)
-    name = None
-    file_filtered = None
+
     for item in items:
-        name = item['name'].split('-')
+        name = item['name'].split('-').pop().strip()
         for file in backup_folder_items:
-            file_filtered = file.split('-')
-            if name[0] is not file_filtered[0]:
-                print('Primeiro ->', name[0],\
-                      '\nSegundo ->',file_filtered[0])
-                print(f"Removing file with id {item['id']} from drive")
+            file_filtered = file.split('-')[0].strip()
+            if name == file_filtered:
+                print(f"Removing the file {file} from folderg")
+                os.remove(f'{BACKUP_FOLDER_PATH}\\{file}')
