@@ -28,10 +28,10 @@ def download_files(items):
 
         #downloading the files
         for item in items:
-            print(f"Downloading da planilha {item['name']}")
-            request = service.files().export_media(fileId=item['id'],
+            print(f"Downloading da planilha {item('name')}")
+            request = service.files().export_media(fileId=item[('id'),
                                                    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            file = io.FileIO(f'{BACKUP_FOLDER_PATH}\\{item['name']}-{date_time}.xlsx', 'wb', closefd=True)
+            file = io.FileIO(f'{BACKUP_FOLDER_PATH}\\{item('name')}-{date_time}.xlsx', 'wb', closefd=True)
             downloader = MediaIoBaseDownload(file, request)
             done = False
             while done is False:
